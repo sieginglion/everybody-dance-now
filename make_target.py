@@ -102,6 +102,6 @@ for idx in tqdm(range(len(os.listdir(str(img_dir))))):
     cv2.imwrite(str(train_img_dir.joinpath('{:05}.png'.format(idx))), img)
     cv2.imwrite(str(train_label_dir.joinpath('{:05}.png'.format(idx))), label)
 
-pose_cords = np.array(pose_cords, dtype=np.int)
+pose_cords = np.array(pose_cords, dtype=int)
 np.save(str((save_dir.joinpath('pose.npy'))), pose_cords)
 torch.cuda.empty_cache()

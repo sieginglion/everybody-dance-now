@@ -99,9 +99,9 @@ for idx in tqdm(range(len(os.listdir(str(img_dir))))):
     cv2.imwrite(str(test_img_dir.joinpath('{:05}.png'.format(idx))), img)
     cv2.imwrite(str(test_label_dir.joinpath('{:05}.png'.format(idx))), label)
     if idx % 100 == 0 and idx != 0:
-        pose_cords_arr = np.array(pose_cords, dtype=np.int)
+        pose_cords_arr = np.array(pose_cords, dtype=int)
         np.save(str((save_dir.joinpath('pose_source.npy'))), pose_cords_arr)
 
-pose_cords_arr = np.array(pose_cords, dtype=np.int)
+pose_cords_arr = np.array(pose_cords, dtype=int)
 np.save(str((save_dir.joinpath('pose_source.npy'))), pose_cords_arr)
 torch.cuda.empty_cache()
