@@ -89,5 +89,5 @@ for img_idx in tqdm(range(len(os.listdir(path)))):
 
     cv2.imwrite(str(output) + '/{:05}.png'.format(img_idx),new_source)
 
-pose_cords_arr = np.array(new_head_pose, dtype=np.int)
+pose_cords_arr = np.array(new_head_pose, dtype=int)
 np.save(str((save_dir.joinpath('pose_source_norm.npy'))), pose_cords_arr)
