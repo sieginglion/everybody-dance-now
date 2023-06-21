@@ -52,9 +52,9 @@ weight_name = './src/PoseEstimation/network/weight/pose_model.pth'
 
 model = get_model('vgg19')
 model.load_state_dict(torch.load(weight_name))
-model = torch.nn.DataParallel(model).cuda()
 model.float()
 model.eval()
+model = torch.compile(model.cuda())
 
 '''make label images for pix2pix'''
 test_img_dir = save_dir.joinpath('test_img')

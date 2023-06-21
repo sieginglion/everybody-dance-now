@@ -108,11 +108,11 @@ class Pix2PixHDModel(BaseModel):
                 params = list(self.netG.parameters())
             if self.gen_features:              
                 params += list(self.netE.parameters())         
-            self.optimizer_G = torch.optim.Adam(params, lr=opt.lr, betas=(opt.beta1, 0.999))                            
+            self.optimizer_G = torch.optim.AdamW(params, lr=opt.lr, betas=(opt.beta1, 0.999), fused=True)
 
             # optimizer D                        
             params = list(self.netD.parameters())    
-            self.optimizer_D = torch.optim.Adam(params, lr=opt.lr, betas=(opt.beta1, 0.999))
+            self.optimizer_D = torch.optim.AdamW(params, lr=opt.lr, betas=(opt.beta1, 0.999), fused=True)
 
     def encode_input(self, label_map, inst_map=None, real_image=None, feat_map=None, infer=False):             
         if self.opt.label_nc == 0:
@@ -281,7 +281,7 @@ class Pix2PixHDModel(BaseModel):
         params = list(self.netG.parameters())
         if self.gen_features:
             params += list(self.netE.parameters())           
-        self.optimizer_G = torch.optim.Adam(params, lr=self.opt.lr, betas=(self.opt.beta1, 0.999))
+        self.optimizer_G = torch.optim.AdamW(params, lr=self.opt.lr, betas=(self.opt.beta1, 0.999), fused=True)
         if self.opt.verbose:
             print('------------ Now also finetuning global generator -----------')
 

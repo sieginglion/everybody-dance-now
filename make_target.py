@@ -44,10 +44,9 @@ weight_name = './src/PoseEstimation/network/weight/pose_model.pth'
 print('load model...')
 model = get_model('vgg19')
 model.load_state_dict(torch.load(weight_name))
-model = torch.nn.DataParallel(model).cuda()
 model.float()
 model.eval()
-pass
+model = torch.compile(model.cuda())
 
 save_dir = Path('./data/target/')
 save_dir.mkdir(exist_ok=True)
