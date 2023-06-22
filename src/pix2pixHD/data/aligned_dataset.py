@@ -1,5 +1,3 @@
-### Copyright (C) 2017 NVIDIA Corporation. All rights reserved. 
-### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 import os.path
 from data.base_dataset import BaseDataset, get_params, get_transform, normalize
 from data.image_folder import make_dataset
@@ -16,7 +14,7 @@ class AlignedDataset(BaseDataset):
         self.A_paths = sorted(make_dataset(self.dir_A))
 
         ### input B (real images)
-        if opt.isTrain:
+        if opt.isTrain or opt.use_encoded_image:
             dir_B = '_B' if self.opt.label_nc == 0 else '_img'
             self.dir_B = os.path.join(opt.dataroot, opt.phase + dir_B)  
             self.B_paths = sorted(make_dataset(self.dir_B))
@@ -48,7 +46,7 @@ class AlignedDataset(BaseDataset):
 
         B_tensor = inst_tensor = feat_tensor = 0
         ### input B (real images)
-        if self.opt.isTrain:
+        if self.opt.isTrain or self.opt.use_encoded_image:
             B_path = self.B_paths[index]   
             B = Image.open(B_path).convert('RGB')
             transform_B = get_transform(self.opt, params)      

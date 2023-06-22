@@ -1,5 +1,3 @@
-### Copyright (C) 2017 NVIDIA Corporation. All rights reserved. 
-### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 from options.train_options import TrainOptions
 from data.data_loader import CreateDataLoader
 from models.models import create_model
@@ -12,6 +10,7 @@ opt.batchSize = 1
 opt.serial_batches = True 
 opt.no_flip = True
 opt.instance_feat = True
+opt.continue_train = True
 
 name = 'features'
 save_path = os.path.join(opt.checkpoints_dir, opt.name)

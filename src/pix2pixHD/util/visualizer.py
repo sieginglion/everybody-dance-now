@@ -1,5 +1,3 @@
-### Copyright (C) 2017 NVIDIA Corporation. All rights reserved.
-### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 import numpy as np
 import os
 import ntpath
@@ -45,7 +43,6 @@ class Visualizer():
                     s = StringIO()
                 except:
                     s = BytesIO()
-                print(image_numpy)
                 scipy.misc.toimage(image_numpy).save(s, format="jpeg")
                 # Create an Image object
                 img_sum = self.tf.Summary.Image(encoded_image_string=s.getvalue(), height=image_numpy.shape[0], width=image_numpy.shape[1])

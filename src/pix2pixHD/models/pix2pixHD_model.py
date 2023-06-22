@@ -1,5 +1,3 @@
-### Copyright (C) 2017 NVIDIA Corporation. All rights reserved. 
-### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 import numpy as np
 import torch
 import os
@@ -25,10 +23,6 @@ class Pix2PixHDModel(BaseModel):
         self.isTrain = opt.isTrain
         self.use_features = opt.instance_feat or opt.label_feat
         self.gen_features = self.use_features and not self.opt.load_features
-        
-        ######extra add
-        self.gpu_ids = opt.gpu_ids
-        ####################
         input_nc = opt.label_nc if opt.label_nc != 0 else opt.input_nc
 
         ##### define networks        
@@ -108,11 +102,11 @@ class Pix2PixHDModel(BaseModel):
                 params = list(self.netG.parameters())
             if self.gen_features:              
                 params += list(self.netE.parameters())         
-            self.optimizer_G = torch.optim.AdamW(params, lr=opt.lr, betas=(opt.beta1, 0.999), fused=True)
+            self.optimizer_G = torch.optim.Adam(params, lr=opt.lr, betas=(opt.beta1, 0.999))                            
 
             # optimizer D                        
             params = list(self.netD.parameters())    
-            self.optimizer_D = torch.optim.AdamW(params, lr=opt.lr, betas=(opt.beta1, 0.999), fused=True)
+            self.optimizer_D = torch.optim.Adam(params, lr=opt.lr, betas=(opt.beta1, 0.999))
 
     def encode_input(self, label_map, inst_map=None, real_image=None, feat_map=None, infer=False):             
         if self.opt.label_nc == 0:
@@ -130,7 +124,7 @@ class Pix2PixHDModel(BaseModel):
         if not self.opt.no_instance:
             inst_map = inst_map.data.cuda()
             edge_map = self.get_edges(inst_map)
-            input_label = torch.cat((input_label, edge_map), dim=1) 
+            input_label = torch.cat((input_label, edge_map), dim=1)         
         input_label = Variable(input_label, volatile=infer)
 
         # real images for training
@@ -142,6 +136,8 @@ class Pix2PixHDModel(BaseModel):
             # get precomputed feature maps
             if self.opt.load_features:
                 feat_map = Variable(feat_map.data.cuda())
+            if self.opt.label_feat:
+                inst_map = label_map.cuda()
 
         return input_label, inst_map, real_image, feat_map
 
@@ -164,8 +160,7 @@ class Pix2PixHDModel(BaseModel):
             input_concat = torch.cat((input_label, feat_map), dim=1)                        
         else:
             input_concat = input_label
-        # TODO----------------------#    
-        fake_image = self.netG.forward(input_concat.float())
+        fake_image = self.netG.forward(input_concat)
 
         # Fake Detection and Loss
         pred_fake_pool = self.discriminate(input_label, fake_image, use_pool=True)
@@ -197,14 +192,19 @@ class Pix2PixHDModel(BaseModel):
         # Only return the fake_B image if necessary to save BW
         return [ self.loss_filter( loss_G_GAN, loss_G_GAN_Feat, loss_G_VGG, loss_D_real, loss_D_fake ), None if not infer else fake_image ]
 
-    def inference(self, label, inst):
+    def inference(self, label, inst, image=None):
         # Encode Inputs        
-        input_label, inst_map, _, _ = self.encode_input(Variable(label), Variable(inst), infer=True)
+        image = Variable(image) if image is not None else None
+        input_label, inst_map, real_image, _ = self.encode_input(Variable(label), Variable(inst), image, infer=True)
 
         # Fake Generation
-        if self.use_features:       
-            # sample clusters from precomputed features             
-            feat_map = self.sample_features(inst_map)
+        if self.use_features:
+            if self.opt.use_encoded_image:
+                # encode the real image to get feature map
+                feat_map = self.netE.forward(real_image, inst_map)
+            else:
+                # sample clusters from precomputed features             
+                feat_map = self.sample_features(inst_map)
             input_concat = torch.cat((input_label, feat_map), dim=1)                        
         else:
             input_concat = input_label        
@@ -219,7 +219,7 @@ class Pix2PixHDModel(BaseModel):
     def sample_features(self, inst): 
         # read precomputed feature clusters 
         cluster_path = os.path.join(self.opt.checkpoints_dir, self.opt.name, self.opt.cluster_path)        
-        features_clustered = np.load(cluster_path).item()
+        features_clustered = np.load(cluster_path, encoding='latin1').item()
 
         # randomly sample from the feature clusters
         inst_np = inst.cpu().numpy().astype(int)                                      
@@ -281,7 +281,7 @@ class Pix2PixHDModel(BaseModel):
         params = list(self.netG.parameters())
         if self.gen_features:
             params += list(self.netE.parameters())           
-        self.optimizer_G = torch.optim.AdamW(params, lr=self.opt.lr, betas=(self.opt.beta1, 0.999), fused=True)
+        self.optimizer_G = torch.optim.Adam(params, lr=self.opt.lr, betas=(self.opt.beta1, 0.999))
         if self.opt.verbose:
             print('------------ Now also finetuning global generator -----------')
 
