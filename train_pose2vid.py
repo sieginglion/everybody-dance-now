@@ -17,7 +17,16 @@ sys.path.append(str(pix2pixhd_dir))
 from data.data_loader import CreateDataLoader
 from models.models import create_model
 import util.util as util
-import src.config.train_opt as opt
+from src.pix2pixHD.options.train_options import TrainOptions
+opt = TrainOptions().parse()
+opt.batchSize=4
+opt.dataroot='./data/target/train'
+opt.label_nc=18
+opt.loadSize=512
+opt.name='target'
+opt.niter=100
+opt.niter_decay=100
+opt.no_instance=True
 
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 torch.multiprocessing.set_sharing_strategy('file_system')
